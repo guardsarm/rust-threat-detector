@@ -1,5 +1,10 @@
 # Rust Threat Detector
 
+[![CI](https://github.com/guardsarm/rust-threat-detector/actions/workflows/ci.yml/badge.svg)](https://github.com/guardsarm/rust-threat-detector/actions/workflows/ci.yml)
+[![Crates.io](https://img.shields.io/crates/v/rust-threat-detector.svg)](https://crates.io/crates/rust-threat-detector)
+[![Documentation](https://docs.rs/rust-threat-detector/badge.svg)](https://docs.rs/rust-threat-detector)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A memory-safe SIEM threat detection component for real-time security monitoring and threat analysis. Built with Rust to eliminate vulnerabilities in security monitoring systems.
 
 ## Security-First Design
@@ -267,9 +272,9 @@ Contributions welcome! Please open an issue or pull request with:
 
 ## Related Projects
 
-- [rust-secure-logger](https://github.com/your-username/rust-secure-logger) - Secure logging for audit trails
-- [rust-network-scanner](https://github.com/your-username/rust-network-scanner) - Network security scanning
-- [rust-crypto-utils](https://github.com/your-username/rust-crypto-utils) - Cryptographic utilities
+- [rust-secure-logger](https://github.com/guardsarm/rust-secure-logger) - Secure logging for audit trails
+- [rust-network-scanner](https://github.com/guardsarm/rust-network-scanner) - Network security scanning
+- [rust-crypto-utils](https://github.com/guardsarm/rust-crypto-utils) - Cryptographic utilities
 
 ## Citation
 
@@ -277,7 +282,7 @@ If you use this detector in research or production systems, please cite:
 
 ```
 Awunor, T.C. (2024). Rust Threat Detector: Memory-Safe SIEM Threat Detection.
-https://github.com/your-username/rust-threat-detector
+https://github.com/guardsarm/rust-threat-detector
 ```
 
 ---
