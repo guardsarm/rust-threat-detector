@@ -2,7 +2,7 @@
 name = "rust-threat-detector"
 version = "0.1.0"
 edition = "2021"
-authors = ["Tony Chuks Awunor <your-email@example.com>"]
+authors = ["Tony Chuks Awunor <chuksawunor@guardsarm.com>"]
 description = "Memory-safe SIEM threat detection component for real-time security monitoring"
 license = "MIT"
 repository = "https://github.com/guardsarm/rust-threat-detector"
@@ -10,7 +10,7 @@ keywords = ["security", "siem", "threat-detection", "monitoring", "memory-safe"]
 categories = ["network-programming", "cryptography"]
 
 [dependencies]
-chrono = "0.4"
+chrono = { version = "0.4", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 regex = "1.10"
