@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["Tony Chuks Awunor <your-email@example.com>"]
 description = "Memory-safe SIEM threat detection component for real-time security monitoring"
 license = "MIT"
-repository = "https://github.com/your-username/rust-threat-detector"
+repository = "https://github.com/guardsarm/rust-threat-detector"
 keywords = ["security", "siem", "threat-detection", "monitoring", "memory-safe"]
 categories = ["network-programming", "cryptography"]
 
