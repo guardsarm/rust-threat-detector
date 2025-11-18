@@ -18,7 +18,7 @@
 //! guidance for critical infrastructure protection.
 
 pub mod mitre_attack;
-pub use mitre_attack::{AttackTactic, AttackTechnique, MitreAttackDetector, ThreatDetection, ThreatSeverity};
+pub use mitre_attack::{AttackTactic, AttackTechnique, MitreAttackDetector, ThreatDetection};
 
 use chrono::{DateTime, Duration, Utc};
 use regex::Regex;
@@ -103,6 +103,7 @@ impl ThreatAlert {
 
 /// Alert aggregation for pattern analysis
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 struct AlertAggregation {
     category: ThreatCategory,
     first_seen: DateTime<Utc>,
@@ -150,7 +151,8 @@ impl ThreatDetector {
             name: "Failed Login Attempts".to_string(),
             category: ThreatCategory::BruteForce,
             severity: ThreatSeverity::High,
-            pattern: Regex::new(r"(?i)(failed.*login|authentication.*failed|invalid.*password)").unwrap(),
+            pattern: Regex::new(r"(?i)(failed.*login|authentication.*failed|invalid.*password)")
+                .unwrap(),
             description: "Multiple failed login attempts detected".to_string(),
             recommended_action: "Block source IP, enable MFA, review user account".to_string(),
         });
@@ -162,7 +164,8 @@ impl ThreatDetector {
             severity: ThreatSeverity::Critical,
             pattern: Regex::new(r"(?i)(malware|virus|trojan|ransomware|backdoor)").unwrap(),
             description: "Malware signature detected in logs".to_string(),
-            recommended_action: "Isolate system, run full scan, investigate infection vector".to_string(),
+            recommended_action: "Isolate system, run full scan, investigate infection vector"
+                .to_string(),
         });
 
         // Data exfiltration
@@ -172,7 +175,8 @@ impl ThreatDetector {
             severity: ThreatSeverity::High,
             pattern: Regex::new(r"(?i)(large.*transfer|exfiltration|unusual.*download)").unwrap(),
             description: "Potential data exfiltration detected".to_string(),
-            recommended_action: "Block transfer, investigate user activity, review DLP policies".to_string(),
+            recommended_action: "Block transfer, investigate user activity, review DLP policies"
+                .to_string(),
         });
 
         // Unauthorized access
@@ -180,9 +184,13 @@ impl ThreatDetector {
             name: "Privilege Escalation".to_string(),
             category: ThreatCategory::UnauthorizedAccess,
             severity: ThreatSeverity::Critical,
-            pattern: Regex::new(r"(?i)(privilege.*escalation|unauthorized.*access|sudo|admin.*access)").unwrap(),
+            pattern: Regex::new(
+                r"(?i)(privilege.*escalation|unauthorized.*access|sudo|admin.*access)",
+            )
+            .unwrap(),
             description: "Unauthorized privilege escalation attempt".to_string(),
-            recommended_action: "Revoke privileges, investigate account, review access logs".to_string(),
+            recommended_action: "Revoke privileges, investigate account, review access logs"
+                .to_string(),
         });
 
         // SQL Injection
@@ -214,6 +222,7 @@ impl ThreatDetector {
     /// Analyze a log entry for threats
     pub fn analyze(&mut self, log: &LogEntry) -> Vec<ThreatAlert> {
         let mut alerts = Vec::new();
+        let mut new_alerts = Vec::new();
 
         for pattern in &self.patterns {
             if pattern.pattern.is_match(&log.message) {
@@ -238,14 +247,15 @@ impl ThreatDetector {
                     correlated_alerts: correlated,
                 };
 
-                // Update aggregation
-                self.update_aggregation(&alert, log);
-
-                // Store in history
-                self.alert_history.push(alert.clone());
-
+                new_alerts.push((alert.clone(), log.clone()));
                 alerts.push(alert);
             }
+        }
+
+        // Update aggregation and store in history after loop
+        for (alert, log) in new_alerts {
+            self.update_aggregation(&alert, &log);
+            self.alert_history.push(alert);
         }
 
         alerts
@@ -300,7 +310,10 @@ impl ThreatDetector {
     /// Update alert aggregation for pattern analysis
     fn update_aggregation(&mut self, alert: &ThreatAlert, log: &LogEntry) {
         let key = format!("{:?}", alert.category);
-        let source = log.source_ip.clone().unwrap_or_else(|| "unknown".to_string());
+        let source = log
+            .source_ip
+            .clone()
+            .unwrap_or_else(|| "unknown".to_string());
 
         self.aggregations
             .entry(key.clone())
@@ -372,8 +385,13 @@ impl ThreatDetector {
         for (i, alert) in self.alert_history.iter().enumerate() {
             let key = format!("{:?}-{}", alert.category, alert.source_log);
             if let Some(&prev_idx) = seen.get(&key) {
-                let prev_alert = &self.alert_history[prev_idx];
-                if (alert.timestamp - prev_alert.timestamp).num_minutes() <= window_minutes {
+                let prev_alert: &ThreatAlert = &self.alert_history[prev_idx];
+                if alert
+                    .timestamp
+                    .signed_duration_since(prev_alert.timestamp)
+                    .num_minutes()
+                    <= window_minutes
+                {
                     to_remove.push(i);
                     continue;
                 }
@@ -521,7 +539,10 @@ mod tests {
 
         let critical_alerts = detector.filter_by_severity(&all_alerts, ThreatSeverity::Critical);
         assert_eq!(critical_alerts.len(), 1);
-        assert_eq!(critical_alerts[0].category, ThreatCategory::MalwareDetection);
+        assert_eq!(
+            critical_alerts[0].category,
+            ThreatCategory::MalwareDetection
+        );
     }
 
     #[test]
@@ -572,7 +593,7 @@ mod tests {
         };
 
         let alerts2 = detector.analyze(&log2);
-        assert!(alerts2[0].correlated_alerts.len() > 0); // Should correlate with first alert
+        assert!(!alerts2[0].correlated_alerts.is_empty()); // Should correlate with first alert
     }
 
     #[test]

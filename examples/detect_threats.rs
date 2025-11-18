@@ -2,8 +2,8 @@
 //!
 //! This example demonstrates real-time threat detection for SIEM integration.
 
-use rust_threat_detector::{LogEntry, ThreatDetector, ThreatSeverity};
 use chrono::Utc;
+use rust_threat_detector::{LogEntry, ThreatDetector, ThreatSeverity};
 use std::collections::HashMap;
 
 fn main() {
@@ -13,6 +13,7 @@ fn main() {
     let mut detector = ThreatDetector::new();
 
     // Simulate various security logs
+    #[allow(clippy::useless_vec)]
     let logs = vec![
         LogEntry {
             timestamp: Utc::now(),

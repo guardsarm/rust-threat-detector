@@ -51,6 +51,7 @@ pub struct MitreAttackDetector {
 
 impl MitreAttackDetector {
     /// Create new detector with common patterns
+    #[allow(clippy::vec_init_then_push)]
     pub fn new() -> Self {
         let mut patterns = Vec::new();
 
@@ -86,7 +87,8 @@ impl MitreAttackDetector {
                 tactic: AttackTactic::InitialAccess,
                 description: "SQL injection or code injection attempts".to_string(),
             },
-            pattern: Regex::new(r"(?i)(union\s+select|or\s+1\s*=\s*1|<script|eval\(|exec\()").unwrap(),
+            pattern: Regex::new(r"(?i)(union\s+select|or\s+1\s*=\s*1|<script|eval\(|exec\()")
+                .unwrap(),
             severity: ThreatSeverity::Critical,
         });
 
