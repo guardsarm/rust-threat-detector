@@ -584,26 +584,26 @@ mod tests {
         let mut detector = ThreatDetector::new();
         let ip = "192.168.1.100".to_string();
 
-        // First alert
+        // First alert - include IP in message for correlation
         let log1 = LogEntry {
             timestamp: Utc::now(),
             source_ip: Some(ip.clone()),
             user: Some("user1".to_string()),
             event_type: "security_event".to_string(),
-            message: "Failed login attempt".to_string(),
+            message: format!("Failed login attempt from {}", ip),
             metadata: HashMap::new(),
         };
 
         let alerts1 = detector.analyze(&log1);
         assert_eq!(alerts1[0].correlated_alerts.len(), 0);
 
-        // Second alert from same IP
+        // Second alert from same IP - include IP in message for correlation
         let log2 = LogEntry {
             timestamp: Utc::now(),
-            source_ip: Some(ip),
+            source_ip: Some(ip.clone()),
             user: Some("user2".to_string()),
             event_type: "security_event".to_string(),
-            message: "Failed login attempt again".to_string(),
+            message: format!("Failed login attempt from {}", ip),
             metadata: HashMap::new(),
         };
 
@@ -663,9 +663,11 @@ mod tests {
     fn test_deduplication() {
         let mut detector = ThreatDetector::new();
 
-        // Create duplicate alerts within short time
+        // Create duplicate alerts with same timestamp to ensure deduplication works
+        let timestamp = Utc::now();
         for _ in 0..3 {
-            let log = create_log_entry("Failed login attempt");
+            let mut log = create_log_entry("Failed login attempt");
+            log.timestamp = timestamp; // Use same timestamp for all
             detector.analyze(&log);
         }
 

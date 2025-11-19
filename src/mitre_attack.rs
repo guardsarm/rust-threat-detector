@@ -296,11 +296,12 @@ mod tests {
     #[test]
     fn test_no_detection() {
         let detector = MitreAttackDetector::new();
-        let message = "User logged out successfully";
+        let message = "User login successful";
 
         let detections = detector.detect(message);
-        // Should detect valid account usage (T1078)
+        // Should detect valid account usage (T1078) - matches pattern: (login|auth|signin).*(success|successful)
         assert!(!detections.is_empty());
+        assert!(detections.iter().any(|d| d.technique.id == "T1078"));
     }
 
     #[test]
