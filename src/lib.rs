@@ -27,7 +27,7 @@ pub mod behavioral_analytics;
 pub use behavioral_analytics::{BehavioralAnalytics, EntityProfile, UserProfile};
 
 pub mod threat_intelligence;
-pub use threat_intelligence::{ThreatIntelligence, IOC, IOCType};
+pub use threat_intelligence::{IOCType, ThreatIntelligence, IOC};
 
 pub mod siem_formats;
 pub use siem_formats::{BatchExporter, SIEMExporter, SIEMFormat};

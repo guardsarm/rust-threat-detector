@@ -58,9 +58,13 @@ impl UserProfile {
         }
 
         // Track login attempts
-        if log.message.to_lowercase().contains("failed") && log.message.to_lowercase().contains("login") {
+        if log.message.to_lowercase().contains("failed")
+            && log.message.to_lowercase().contains("login")
+        {
             self.failed_logins += 1;
-        } else if log.message.to_lowercase().contains("successful") && log.message.to_lowercase().contains("login") {
+        } else if log.message.to_lowercase().contains("successful")
+            && log.message.to_lowercase().contains("login")
+        {
             self.successful_logins += 1;
         }
 
@@ -120,7 +124,7 @@ pub struct EntityProfile {
     pub first_seen: DateTime<Utc>,
     pub last_seen: DateTime<Utc>,
     pub typical_event_rate: f64, // Events per hour
-    pub typical_error_rate: f64,  // Percentage
+    pub typical_error_rate: f64, // Percentage
     pub unusual_processes: Vec<String>,
     pub network_connections: HashMap<String, usize>,
 }
@@ -187,7 +191,9 @@ impl BehavioralAnalytics {
                 ),
                 source_log: format!("{} - {}", log.timestamp, log.message),
                 indicators: self.build_indicators(&user_id, log, anomaly_score),
-                recommended_action: "Review user activity, verify identity, check for compromised credentials".to_string(),
+                recommended_action:
+                    "Review user activity, verify identity, check for compromised credentials"
+                        .to_string(),
                 threat_score: anomaly_score as u32,
                 correlated_alerts: vec![],
             })
@@ -202,12 +208,16 @@ impl BehavioralAnalytics {
 
         if let Some(profile) = self.user_profiles.get(user_id) {
             let hour = log.timestamp.hour();
-            if !profile.typical_login_hours.is_empty() && !profile.typical_login_hours.contains(&hour) {
+            if !profile.typical_login_hours.is_empty()
+                && !profile.typical_login_hours.contains(&hour)
+            {
                 indicators.push(format!("Unusual login hour: {}", hour));
             }
 
             if let Some(ref ip) = log.source_ip {
-                if !profile.typical_source_ips.is_empty() && !profile.typical_source_ips.contains(ip) {
+                if !profile.typical_source_ips.is_empty()
+                    && !profile.typical_source_ips.contains(ip)
+                {
                     indicators.push(format!("Unusual source IP: {}", ip));
                 }
             }
@@ -247,8 +257,10 @@ impl BehavioralAnalytics {
 
     /// Clear old profiles to manage memory
     pub fn clear_old_profiles(&mut self, before: DateTime<Utc>) {
-        self.user_profiles.retain(|_, profile| profile.last_seen >= before);
-        self.entity_profiles.retain(|_, profile| profile.last_seen >= before);
+        self.user_profiles
+            .retain(|_, profile| profile.last_seen >= before);
+        self.entity_profiles
+            .retain(|_, profile| profile.last_seen >= before);
     }
 
     /// Get statistics
@@ -307,7 +319,9 @@ mod tests {
 
         assert_eq!(profile.total_events, 1);
         assert!(profile.typical_login_hours.contains(&9));
-        assert!(profile.typical_source_ips.contains(&"192.168.1.1".to_string()));
+        assert!(profile
+            .typical_source_ips
+            .contains(&"192.168.1.1".to_string()));
     }
 
     #[test]

@@ -68,7 +68,10 @@ impl SIEMExporter {
 
     /// Export multiple alerts to specified format
     pub fn export_batch(&self, alerts: &[ThreatAlert], format: SIEMFormat) -> Vec<String> {
-        alerts.iter().map(|alert| self.export(alert, format)).collect()
+        alerts
+            .iter()
+            .map(|alert| self.export(alert, format))
+            .collect()
     }
 
     /// Convert alert to CEF (Common Event Format)
@@ -79,7 +82,10 @@ impl SIEMExporter {
         let signature_id = format!("{:?}", alert.category);
 
         let mut extensions = Vec::new();
-        extensions.push(format!("act={}", self.escape_cef(&alert.recommended_action)));
+        extensions.push(format!(
+            "act={}",
+            self.escape_cef(&alert.recommended_action)
+        ));
         extensions.push("cs1Label=ThreatScore".to_string());
         extensions.push(format!("cs1={}", alert.threat_score));
         extensions.push("cs2Label=AlertID".to_string());
@@ -89,7 +95,10 @@ impl SIEMExporter {
 
         if !alert.indicators.is_empty() {
             extensions.push("cs4Label=Indicators".to_string());
-            extensions.push(format!("cs4={}", self.escape_cef(&alert.indicators.join(", "))));
+            extensions.push(format!(
+                "cs4={}",
+                self.escape_cef(&alert.indicators.join(", "))
+            ));
         }
 
         if !alert.correlated_alerts.is_empty() {
@@ -118,16 +127,25 @@ impl SIEMExporter {
         let mut fields = Vec::new();
         fields.push(format!("devTime={}", alert.timestamp.timestamp()));
         fields.push("devTimeFormat=epoch".to_string());
-        fields.push(format!("sev={}", self.severity_to_leef_level(alert.severity)));
+        fields.push(format!(
+            "sev={}",
+            self.severity_to_leef_level(alert.severity)
+        ));
         fields.push(format!("cat={:?}", alert.category));
         fields.push(format!("desc={}", self.escape_leef(&alert.description)));
         fields.push(format!("threatScore={}", alert.threat_score));
         fields.push(format!("alertId={}", alert.alert_id));
-        fields.push(format!("recommendedAction={}", self.escape_leef(&alert.recommended_action)));
+        fields.push(format!(
+            "recommendedAction={}",
+            self.escape_leef(&alert.recommended_action)
+        ));
         fields.push(format!("sourceLog={}", self.escape_leef(&alert.source_log)));
 
         if !alert.indicators.is_empty() {
-            fields.push(format!("indicators={}", self.escape_leef(&alert.indicators.join(", "))));
+            fields.push(format!(
+                "indicators={}",
+                self.escape_leef(&alert.indicators.join(", "))
+            ));
         }
 
         format!(
@@ -274,11 +292,11 @@ impl SIEMExporter {
         // Facility: Security (13), Severity levels: 0-7
         let facility = 13 << 3;
         let level = match severity {
-            ThreatSeverity::Info => 6,      // Informational
-            ThreatSeverity::Low => 5,       // Notice
-            ThreatSeverity::Medium => 4,    // Warning
-            ThreatSeverity::High => 3,      // Error
-            ThreatSeverity::Critical => 2,  // Critical
+            ThreatSeverity::Info => 6,     // Informational
+            ThreatSeverity::Low => 5,      // Notice
+            ThreatSeverity::Medium => 4,   // Warning
+            ThreatSeverity::High => 3,     // Error
+            ThreatSeverity::Critical => 2, // Critical
         };
         facility | level
     }
@@ -443,7 +461,10 @@ mod tests {
         assert_eq!(exporter.severity_to_cef_level(ThreatSeverity::Critical), 10);
         assert_eq!(exporter.severity_to_cef_level(ThreatSeverity::Low), 3);
 
-        assert_eq!(exporter.severity_to_leef_level(ThreatSeverity::Critical), 10);
+        assert_eq!(
+            exporter.severity_to_leef_level(ThreatSeverity::Critical),
+            10
+        );
         assert_eq!(exporter.severity_to_leef_level(ThreatSeverity::Medium), 5);
 
         assert_eq!(exporter.severity_to_numeric(ThreatSeverity::Critical), 5);

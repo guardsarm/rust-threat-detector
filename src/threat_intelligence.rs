@@ -315,7 +315,10 @@ impl ThreatIntelligence {
         let mut stats = HashMap::new();
         stats.insert("total_matches".to_string(), self.matches_count);
         stats.insert("malicious_ips".to_string(), self.malicious_ips.len());
-        stats.insert("malicious_domains".to_string(), self.malicious_domains.len());
+        stats.insert(
+            "malicious_domains".to_string(),
+            self.malicious_domains.len(),
+        );
         stats.insert("malicious_hashes".to_string(), self.malicious_hashes.len());
         stats.insert("threat_actors".to_string(), self.threat_actors.len());
 
@@ -449,7 +452,9 @@ mod tests {
         let alerts = intel.check_log(&log);
 
         // Should not match any default IOCs
-        assert!(alerts.iter().all(|a| a.severity != ThreatSeverity::Critical));
+        assert!(alerts
+            .iter()
+            .all(|a| a.severity != ThreatSeverity::Critical));
     }
 
     #[test]
@@ -509,11 +514,15 @@ mod tests {
             metadata: HashMap::new(),
         };
 
-        log.metadata.insert("user_agent".to_string(), "sqlmap/1.0".to_string());
+        log.metadata
+            .insert("user_agent".to_string(), "sqlmap/1.0".to_string());
 
         let alerts = intel.check_log(&log);
         assert!(!alerts.is_empty());
-        assert!(alerts[0].description.contains("UserAgent") || alerts[0].description.contains("SQL injection"));
+        assert!(
+            alerts[0].description.contains("UserAgent")
+                || alerts[0].description.contains("SQL injection")
+        );
     }
 
     #[test]

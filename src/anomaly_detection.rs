@@ -65,11 +65,7 @@ impl TimeSeries {
             return 0.0;
         }
         let mean = self.mean();
-        let variance = self
-            .values
-            .iter()
-            .map(|x| (x - mean).powi(2))
-            .sum::<f64>()
+        let variance = self.values.iter().map(|x| (x - mean).powi(2)).sum::<f64>()
             / (self.values.len() - 1) as f64;
         variance.sqrt()
     }
@@ -118,10 +114,10 @@ impl AnomalyDetector {
     pub fn new() -> Self {
         Self {
             metrics: HashMap::new(),
-            z_score_threshold: 3.0,  // 3 sigma
-            iqr_multiplier: 1.5,      // Standard IQR multiplier
+            z_score_threshold: 3.0, // 3 sigma
+            iqr_multiplier: 1.5,    // Standard IQR multiplier
             moving_avg_window: 10,
-            smoothing_alpha: 0.3,     // Exponential smoothing factor
+            smoothing_alpha: 0.3, // Exponential smoothing factor
         }
     }
 
@@ -400,7 +396,10 @@ impl AnomalyResult {
             timestamp: Utc::now(),
             severity: self.severity,
             category: ThreatCategory::AnomalousActivity,
-            description: format!("Statistical anomaly in {}: {}", self.metric_name, self.description),
+            description: format!(
+                "Statistical anomaly in {}: {}",
+                self.metric_name, self.description
+            ),
             source_log: format!("{} - {}", source_log.timestamp, source_log.message),
             indicators: vec![
                 format!("Current: {:.2}", self.current_value),
@@ -408,7 +407,9 @@ impl AnomalyResult {
                 format!("Deviation: {:.2}", self.deviation),
                 format!("Method: {:?}", self.method),
             ],
-            recommended_action: "Investigate metric anomaly, review related logs, check for system issues".to_string(),
+            recommended_action:
+                "Investigate metric anomaly, review related logs, check for system issues"
+                    .to_string(),
             threat_score: self.calculate_threat_score(),
             correlated_alerts: vec![],
         }
@@ -566,18 +567,12 @@ mod tests {
             detector.calculate_severity(10.0, 3.0),
             ThreatSeverity::Critical
         );
-        assert_eq!(
-            detector.calculate_severity(6.5, 3.0),
-            ThreatSeverity::High
-        );
+        assert_eq!(detector.calculate_severity(6.5, 3.0), ThreatSeverity::High);
         assert_eq!(
             detector.calculate_severity(4.8, 3.0),
             ThreatSeverity::Medium
         );
-        assert_eq!(
-            detector.calculate_severity(3.2, 3.0),
-            ThreatSeverity::Low
-        );
+        assert_eq!(detector.calculate_severity(3.2, 3.0), ThreatSeverity::Low);
     }
 
     #[test]
