@@ -43,7 +43,7 @@ impl SIEMExporter {
     }
 
     /// Create default exporter
-    pub fn default() -> Self {
+    pub fn new_default() -> Self {
         Self {
             vendor: "GuardsArm".to_string(),
             product: "RustThreatDetector".to_string(),
@@ -80,20 +80,20 @@ impl SIEMExporter {
 
         let mut extensions = Vec::new();
         extensions.push(format!("act={}", self.escape_cef(&alert.recommended_action)));
-        extensions.push(format!("cs1Label=ThreatScore"));
+        extensions.push("cs1Label=ThreatScore".to_string());
         extensions.push(format!("cs1={}", alert.threat_score));
-        extensions.push(format!("cs2Label=AlertID"));
+        extensions.push("cs2Label=AlertID".to_string());
         extensions.push(format!("cs2={}", alert.alert_id));
-        extensions.push(format!("cs3Label=SourceLog"));
+        extensions.push("cs3Label=SourceLog".to_string());
         extensions.push(format!("cs3={}", self.escape_cef(&alert.source_log)));
 
         if !alert.indicators.is_empty() {
-            extensions.push(format!("cs4Label=Indicators"));
+            extensions.push("cs4Label=Indicators".to_string());
             extensions.push(format!("cs4={}", self.escape_cef(&alert.indicators.join(", "))));
         }
 
         if !alert.correlated_alerts.is_empty() {
-            extensions.push(format!("cs5Label=CorrelatedAlerts"));
+            extensions.push("cs5Label=CorrelatedAlerts".to_string());
             extensions.push(format!("cs5={}", alert.correlated_alerts.len()));
         }
 
@@ -117,7 +117,7 @@ impl SIEMExporter {
 
         let mut fields = Vec::new();
         fields.push(format!("devTime={}", alert.timestamp.timestamp()));
-        fields.push(format!("devTimeFormat=epoch"));
+        fields.push("devTimeFormat=epoch".to_string());
         fields.push(format!("sev={}", self.severity_to_leef_level(alert.severity)));
         fields.push(format!("cat={:?}", alert.category));
         fields.push(format!("desc={}", self.escape_leef(&alert.description)));
@@ -315,7 +315,7 @@ impl BatchExporter {
     /// Create new batch exporter
     pub fn new(format: SIEMFormat) -> Self {
         Self {
-            exporter: SIEMExporter::default(),
+            exporter: SIEMExporter::new_default(),
             format,
         }
     }
@@ -368,7 +368,7 @@ mod tests {
 
     #[test]
     fn test_cef_export() {
-        let exporter = SIEMExporter::default();
+        let exporter = SIEMExporter::new_default();
         let alert = create_test_alert();
         let cef = exporter.to_cef(&alert);
 
@@ -381,7 +381,7 @@ mod tests {
 
     #[test]
     fn test_leef_export() {
-        let exporter = SIEMExporter::default();
+        let exporter = SIEMExporter::new_default();
         let alert = create_test_alert();
         let leef = exporter.to_leef(&alert);
 
@@ -393,7 +393,7 @@ mod tests {
 
     #[test]
     fn test_json_export() {
-        let exporter = SIEMExporter::default();
+        let exporter = SIEMExporter::new_default();
         let alert = create_test_alert();
         let json = exporter.to_json(&alert);
 
@@ -405,7 +405,7 @@ mod tests {
 
     #[test]
     fn test_syslog_export() {
-        let exporter = SIEMExporter::default();
+        let exporter = SIEMExporter::new_default();
         let alert = create_test_alert();
         let syslog = exporter.to_syslog(&alert);
 
@@ -417,7 +417,7 @@ mod tests {
 
     #[test]
     fn test_csv_export() {
-        let exporter = SIEMExporter::default();
+        let exporter = SIEMExporter::new_default();
         let alert = create_test_alert();
         let csv = exporter.to_csv(&alert);
 
@@ -438,7 +438,7 @@ mod tests {
 
     #[test]
     fn test_severity_conversions() {
-        let exporter = SIEMExporter::default();
+        let exporter = SIEMExporter::new_default();
 
         assert_eq!(exporter.severity_to_cef_level(ThreatSeverity::Critical), 10);
         assert_eq!(exporter.severity_to_cef_level(ThreatSeverity::Low), 3);
@@ -452,7 +452,7 @@ mod tests {
 
     #[test]
     fn test_cef_escaping() {
-        let exporter = SIEMExporter::default();
+        let exporter = SIEMExporter::new_default();
         let input = "test|value=with\\special\nchars";
         let escaped = exporter.escape_cef(input);
 
@@ -464,7 +464,7 @@ mod tests {
 
     #[test]
     fn test_csv_escaping() {
-        let exporter = SIEMExporter::default();
+        let exporter = SIEMExporter::new_default();
         let input = "test \"quoted\" value";
         let escaped = exporter.escape_csv(input);
 
@@ -473,7 +473,7 @@ mod tests {
 
     #[test]
     fn test_batch_export() {
-        let exporter = SIEMExporter::default();
+        let exporter = SIEMExporter::new_default();
         let alerts = vec![create_test_alert(), create_test_alert()];
         let batch = exporter.export_batch(&alerts, SIEMFormat::JSON);
 
@@ -494,7 +494,7 @@ mod tests {
 
     #[test]
     fn test_all_formats() {
-        let exporter = SIEMExporter::default();
+        let exporter = SIEMExporter::new_default();
         let alert = create_test_alert();
 
         // Test that all formats produce non-empty output

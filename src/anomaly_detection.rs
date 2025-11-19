@@ -479,7 +479,7 @@ mod tests {
         assert_eq!(ts.percentile(0.0), 1.0);
         assert_eq!(ts.percentile(100.0), 100.0);
         let median = ts.percentile(50.0);
-        assert!(median >= 49.0 && median <= 52.0);
+        assert!((49.0..=52.0).contains(&median));
     }
 
     #[test]
@@ -490,9 +490,9 @@ mod tests {
         }
 
         let (q1, q3, iqr) = ts.iqr();
-        assert!(q1 >= 24.0 && q1 <= 27.0);
-        assert!(q3 >= 73.0 && q3 <= 77.0);
-        assert!(iqr >= 48.0 && iqr <= 52.0);
+        assert!((24.0..=27.0).contains(&q1));
+        assert!((73.0..=77.0).contains(&q3));
+        assert!((48.0..=52.0).contains(&iqr));
     }
 
     #[test]

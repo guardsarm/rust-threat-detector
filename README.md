@@ -218,7 +218,7 @@ Export alerts to multiple SIEM formats:
 ```rust
 use rust_threat_detector::{SIEMExporter, SIEMFormat};
 
-let exporter = SIEMExporter::default();
+let exporter = SIEMExporter::new_default();
 
 // Export to CEF (ArcSight)
 let cef = exporter.export(&alert, SIEMFormat::CEF);
@@ -400,7 +400,7 @@ The threat detector provides native support for all major SIEM platforms through
 ```rust
 use rust_threat_detector::{SIEMExporter, SIEMFormat};
 
-let exporter = SIEMExporter::default();
+let exporter = SIEMExporter::new_default();
 let cef_output = exporter.export(&alert, SIEMFormat::CEF);
 // Output: CEF:0|GuardsArm|RustThreatDetector|1.0|BruteForce|...
 
