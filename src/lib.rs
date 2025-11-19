@@ -9,8 +9,11 @@
 //! - **Real-time Analysis**: Fast pattern matching and threat detection
 //! - **MITRE ATT&CK Framework**: 10+ technique detection patterns
 //! - **Pattern Library**: Pre-configured threat patterns
-//! - **Anomaly Detection**: Statistical anomaly detection
+//! - **Behavioral Analytics**: User and Entity Behavior Analytics (UEBA) for anomaly detection
+//! - **Threat Intelligence**: IOC matching against known malicious indicators
+//! - **Anomaly Detection**: Statistical and machine learning-based anomaly detection
 //! - **Alert Generation**: Structured alert output for SIEM integration
+//! - **SIEM Export**: Multiple export formats (CEF, LEEF, JSON, Syslog)
 //!
 //! ## Alignment with Federal Guidance
 //!
@@ -19,6 +22,18 @@
 
 pub mod mitre_attack;
 pub use mitre_attack::{AttackTactic, AttackTechnique, MitreAttackDetector, ThreatDetection};
+
+pub mod behavioral_analytics;
+pub use behavioral_analytics::{BehavioralAnalytics, EntityProfile, UserProfile};
+
+pub mod threat_intelligence;
+pub use threat_intelligence::{ThreatIntelligence, IOC, IOCType};
+
+pub mod siem_formats;
+pub use siem_formats::{BatchExporter, SIEMExporter, SIEMFormat};
+
+pub mod anomaly_detection;
+pub use anomaly_detection::{AnomalyDetector, AnomalyResult, DetectionMethod, TimeSeries};
 
 use chrono::{DateTime, Duration, Utc};
 use regex::Regex;
