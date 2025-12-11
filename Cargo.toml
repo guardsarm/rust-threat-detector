@@ -1,13 +1,20 @@
 [package]
 name = "rust-threat-detector"
-version = "0.1.0"
+version = "2.0.0"
 edition = "2021"
 authors = ["Tony Chuks Awunor <chuksawunor@guardsarm.com>"]
-description = "Memory-safe SIEM threat detection component for real-time security monitoring"
+description = "Advanced memory-safe SIEM threat detection with ML-based scoring, automated incident response, and threat hunting capabilities"
 license = "MIT"
 repository = "https://github.com/guardsarm/rust-threat-detector"
 keywords = ["security", "siem", "threat-detection", "monitoring", "memory-safe"]
 categories = ["network-programming", "cryptography"]
+
+[features]
+default = ["ml-scoring", "incident-response"]
+ml-scoring = []
+incident-response = []
+threat-hunting = []
+full = ["ml-scoring", "incident-response", "threat-hunting"]
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
@@ -16,9 +23,19 @@ serde_json = "1.0"
 regex = "1.10"
 thiserror = "1.0"
 hostname = "0.3"
+uuid = { version = "1.0", features = ["v4"] }
+sha2 = "0.10"
 
 [dev-dependencies]
 
 [[example]]
 name = "detect_threats"
 path = "examples/detect_threats.rs"
+
+[[example]]
+name = "ml_threat_scoring"
+path = "examples/ml_threat_scoring.rs"
+
+[[example]]
+name = "incident_response"
+path = "examples/incident_response.rs"

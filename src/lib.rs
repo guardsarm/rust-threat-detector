@@ -1,7 +1,14 @@
-//! # Rust Threat Detector
+//! # Rust Threat Detector v2.0
 //!
-//! A memory-safe SIEM threat detection component for real-time security monitoring
-//! and threat analysis.
+//! An advanced memory-safe SIEM threat detection component with ML-based scoring,
+//! automated incident response, and proactive threat hunting capabilities.
+//!
+//! ## What's New in v2.0
+//!
+//! - **ML-Based Scoring**: Feature-engineered threat scoring with statistical models
+//! - **Automated Incident Response**: Playbook-driven response workflows
+//! - **Threat Hunting**: Hypothesis-driven hunting with IOC sweeps
+//! - **Enhanced Detection**: Improved pattern matching and behavioral analysis
 //!
 //! ## Features
 //!
@@ -14,10 +21,36 @@
 //! - **Anomaly Detection**: Statistical and machine learning-based anomaly detection
 //! - **Alert Generation**: Structured alert output for SIEM integration
 //! - **SIEM Export**: Multiple export formats (CEF, LEEF, JSON, Syslog)
+//! - **Incident Response**: Automated playbooks and response actions
+//! - **Threat Hunting**: Proactive hunting capabilities with templates
+//!
+//! ## Quick Start
+//!
+//! ```rust,no_run
+//! use rust_threat_detector::{ThreatDetector, LogEntry};
+//! use chrono::Utc;
+//! use std::collections::HashMap;
+//!
+//! let mut detector = ThreatDetector::new();
+//!
+//! let log = LogEntry {
+//!     timestamp: Utc::now(),
+//!     source_ip: Some("192.168.1.100".to_string()),
+//!     user: Some("admin".to_string()),
+//!     event_type: "auth".to_string(),
+//!     message: "Failed login attempt for admin".to_string(),
+//!     metadata: HashMap::new(),
+//! };
+//!
+//! let alerts = detector.analyze(&log);
+//! for alert in alerts {
+//!     println!("Alert: {} (Score: {})", alert.description, alert.threat_score);
+//! }
+//! ```
 //!
 //! ## Alignment with Federal Guidance
 //!
-//! Implements memory-safe security monitoring tools, aligning with 2024 CISA/FBI
+//! Implements memory-safe security monitoring tools, aligning with 2024-2025 CISA/FBI/NSA
 //! guidance for critical infrastructure protection.
 
 pub mod mitre_attack;
@@ -34,6 +67,26 @@ pub use siem_formats::{BatchExporter, SIEMExporter, SIEMFormat};
 
 pub mod anomaly_detection;
 pub use anomaly_detection::{AnomalyDetector, AnomalyResult, DetectionMethod, TimeSeries};
+
+// v2.0 modules
+pub mod ml_scoring;
+pub use ml_scoring::{
+    MLThreatScorer, ThreatFeatures, ThreatScore, RiskLevel,
+    ContributingFactor, ModelWeights, BaselineStats,
+};
+
+pub mod incident_response;
+pub use incident_response::{
+    IncidentResponseManager, Incident, IncidentStatus, Playbook,
+    PlaybookAction, ResponseAction, ActionResult, IncidentStatistics,
+};
+
+pub mod threat_hunting;
+pub use threat_hunting::{
+    ThreatHuntingEngine, ThreatHunt, HuntStatus, HuntQuery,
+    HuntFinding, HuntTemplate, HuntIOC, IOCType as HuntIOCType,
+    HuntStatistics, QueryMatch, IOCSweepResult,
+};
 
 use chrono::{DateTime, Duration, Utc};
 use regex::Regex;
@@ -52,7 +105,7 @@ pub enum DetectionError {
 }
 
 /// Threat severity levels
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum ThreatSeverity {
     Info,
     Low,
@@ -62,7 +115,7 @@ pub enum ThreatSeverity {
 }
 
 /// Threat categories
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum ThreatCategory {
     BruteForce,
     MalwareDetection,
