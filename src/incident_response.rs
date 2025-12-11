@@ -47,19 +47,50 @@ impl IncidentStatus {
 /// Response action types
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum ResponseAction {
-    BlockIP { ip: String, duration_hours: u32 },
-    DisableAccount { account: String },
-    IsolateHost { hostname: String },
-    TerminateSession { session_id: String },
-    NotifyTeam { team: String, message: String },
-    CreateTicket { system: String, priority: String },
-    CollectEvidence { sources: Vec<String> },
-    RunScan { scan_type: String, target: String },
-    ResetCredentials { account: String },
-    EnableMFA { account: String },
-    UpdateFirewall { rule: String },
-    EscalateToSOC { priority: String },
-    Custom { name: String, parameters: HashMap<String, String> },
+    BlockIP {
+        ip: String,
+        duration_hours: u32,
+    },
+    DisableAccount {
+        account: String,
+    },
+    IsolateHost {
+        hostname: String,
+    },
+    TerminateSession {
+        session_id: String,
+    },
+    NotifyTeam {
+        team: String,
+        message: String,
+    },
+    CreateTicket {
+        system: String,
+        priority: String,
+    },
+    CollectEvidence {
+        sources: Vec<String>,
+    },
+    RunScan {
+        scan_type: String,
+        target: String,
+    },
+    ResetCredentials {
+        account: String,
+    },
+    EnableMFA {
+        account: String,
+    },
+    UpdateFirewall {
+        rule: String,
+    },
+    EscalateToSOC {
+        priority: String,
+    },
+    Custom {
+        name: String,
+        parameters: HashMap<String, String>,
+    },
 }
 
 impl ResponseAction {
@@ -87,8 +118,8 @@ impl ResponseAction {
         matches!(
             self,
             ResponseAction::BlockIP { .. }
-            | ResponseAction::DisableAccount { .. }
-            | ResponseAction::IsolateHost { .. }
+                | ResponseAction::DisableAccount { .. }
+                | ResponseAction::IsolateHost { .. }
         )
     }
 }
@@ -242,20 +273,17 @@ impl Incident {
         match new_status {
             IncidentStatus::Acknowledged => {
                 self.acknowledged_at = Some(Utc::now());
-                self.metrics.time_to_acknowledge_seconds = Some(
-                    (Utc::now() - self.created_at).num_seconds()
-                );
+                self.metrics.time_to_acknowledge_seconds =
+                    Some((Utc::now() - self.created_at).num_seconds());
             }
             IncidentStatus::Containing => {
-                self.metrics.time_to_contain_seconds = Some(
-                    (Utc::now() - self.created_at).num_seconds()
-                );
+                self.metrics.time_to_contain_seconds =
+                    Some((Utc::now() - self.created_at).num_seconds());
             }
             IncidentStatus::Resolved => {
                 self.resolved_at = Some(Utc::now());
-                self.metrics.time_to_resolve_seconds = Some(
-                    (Utc::now() - self.created_at).num_seconds()
-                );
+                self.metrics.time_to_resolve_seconds =
+                    Some((Utc::now() - self.created_at).num_seconds());
             }
             _ => {}
         }
@@ -407,7 +435,11 @@ impl IncidentResponseManager {
                 },
                 PlaybookAction {
                     action: ResponseAction::CollectEvidence {
-                        sources: vec!["memory_dump".to_string(), "process_list".to_string(), "network_connections".to_string()],
+                        sources: vec![
+                            "memory_dump".to_string(),
+                            "process_list".to_string(),
+                            "network_connections".to_string(),
+                        ],
                     },
                     order: 4,
                     condition: None,
@@ -551,7 +583,12 @@ impl IncidentResponseManager {
     }
 
     /// Execute playbook actions (simulated)
-    pub fn execute_playbook(&mut self, incident_id: &str, playbook: &Playbook, context: &HashMap<String, String>) -> Vec<ActionResult> {
+    pub fn execute_playbook(
+        &mut self,
+        incident_id: &str,
+        playbook: &Playbook,
+        context: &HashMap<String, String>,
+    ) -> Vec<ActionResult> {
         let mut results = Vec::new();
 
         for pb_action in &playbook.actions {
@@ -578,45 +615,35 @@ impl IncidentResponseManager {
     }
 
     /// Substitute variables in action
-    fn substitute_variables(&self, action: &ResponseAction, context: &HashMap<String, String>) -> ResponseAction {
+    fn substitute_variables(
+        &self,
+        action: &ResponseAction,
+        context: &HashMap<String, String>,
+    ) -> ResponseAction {
         match action {
-            ResponseAction::BlockIP { ip, duration_hours } => {
-                ResponseAction::BlockIP {
-                    ip: self.substitute_var(ip, context),
-                    duration_hours: *duration_hours,
-                }
-            }
-            ResponseAction::DisableAccount { account } => {
-                ResponseAction::DisableAccount {
-                    account: self.substitute_var(account, context),
-                }
-            }
-            ResponseAction::IsolateHost { hostname } => {
-                ResponseAction::IsolateHost {
-                    hostname: self.substitute_var(hostname, context),
-                }
-            }
-            ResponseAction::TerminateSession { session_id } => {
-                ResponseAction::TerminateSession {
-                    session_id: self.substitute_var(session_id, context),
-                }
-            }
-            ResponseAction::RunScan { scan_type, target } => {
-                ResponseAction::RunScan {
-                    scan_type: scan_type.clone(),
-                    target: self.substitute_var(target, context),
-                }
-            }
-            ResponseAction::ResetCredentials { account } => {
-                ResponseAction::ResetCredentials {
-                    account: self.substitute_var(account, context),
-                }
-            }
-            ResponseAction::EnableMFA { account } => {
-                ResponseAction::EnableMFA {
-                    account: self.substitute_var(account, context),
-                }
-            }
+            ResponseAction::BlockIP { ip, duration_hours } => ResponseAction::BlockIP {
+                ip: self.substitute_var(ip, context),
+                duration_hours: *duration_hours,
+            },
+            ResponseAction::DisableAccount { account } => ResponseAction::DisableAccount {
+                account: self.substitute_var(account, context),
+            },
+            ResponseAction::IsolateHost { hostname } => ResponseAction::IsolateHost {
+                hostname: self.substitute_var(hostname, context),
+            },
+            ResponseAction::TerminateSession { session_id } => ResponseAction::TerminateSession {
+                session_id: self.substitute_var(session_id, context),
+            },
+            ResponseAction::RunScan { scan_type, target } => ResponseAction::RunScan {
+                scan_type: scan_type.clone(),
+                target: self.substitute_var(target, context),
+            },
+            ResponseAction::ResetCredentials { account } => ResponseAction::ResetCredentials {
+                account: self.substitute_var(account, context),
+            },
+            ResponseAction::EnableMFA { account } => ResponseAction::EnableMFA {
+                account: self.substitute_var(account, context),
+            },
             _ => action.clone(),
         }
     }
@@ -657,8 +684,16 @@ impl IncidentResponseManager {
     /// Get incident statistics
     pub fn get_statistics(&self) -> IncidentStatistics {
         let total = self.incidents.len();
-        let active = self.incidents.values().filter(|i| i.status.is_active()).count();
-        let resolved = self.incidents.values().filter(|i| matches!(i.status, IncidentStatus::Resolved | IncidentStatus::Closed)).count();
+        let active = self
+            .incidents
+            .values()
+            .filter(|i| i.status.is_active())
+            .count();
+        let resolved = self
+            .incidents
+            .values()
+            .filter(|i| matches!(i.status, IncidentStatus::Resolved | IncidentStatus::Closed))
+            .count();
 
         let mut by_severity: HashMap<ThreatSeverity, usize> = HashMap::new();
         let mut by_category: HashMap<ThreatCategory, usize> = HashMap::new();
@@ -682,7 +717,8 @@ impl IncidentResponseManager {
 
     /// Calculate average resolution time
     fn calculate_avg_resolution_time(&self) -> f64 {
-        let resolved: Vec<&Incident> = self.incidents
+        let resolved: Vec<&Incident> = self
+            .incidents
             .values()
             .filter(|i| i.metrics.time_to_resolve_seconds.is_some())
             .collect();
@@ -805,9 +841,8 @@ mod tests {
         let incident_id = manager.create_incident(&alert);
 
         // Clone the playbook to avoid borrow checker issues
-        let playbook: Option<Playbook> = {
-            manager.find_playbooks(&alert).first().map(|&p| p.clone())
-        };
+        let playbook: Option<Playbook> =
+            { manager.find_playbooks(&alert).first().map(|&p| p.clone()) };
 
         let mut context = HashMap::new();
         context.insert("source_ip".to_string(), "192.168.1.100".to_string());
@@ -899,8 +934,14 @@ mod tests {
 
     #[test]
     fn test_status_next() {
-        assert_eq!(IncidentStatus::New.next(), Some(IncidentStatus::Acknowledged));
-        assert_eq!(IncidentStatus::Resolved.next(), Some(IncidentStatus::Closed));
+        assert_eq!(
+            IncidentStatus::New.next(),
+            Some(IncidentStatus::Acknowledged)
+        );
+        assert_eq!(
+            IncidentStatus::Resolved.next(),
+            Some(IncidentStatus::Closed)
+        );
         assert_eq!(IncidentStatus::Closed.next(), None);
     }
 }

@@ -71,21 +71,20 @@ pub use anomaly_detection::{AnomalyDetector, AnomalyResult, DetectionMethod, Tim
 // v2.0 modules
 pub mod ml_scoring;
 pub use ml_scoring::{
-    MLThreatScorer, ThreatFeatures, ThreatScore, RiskLevel,
-    ContributingFactor, ModelWeights, BaselineStats,
+    BaselineStats, ContributingFactor, MLThreatScorer, ModelWeights, RiskLevel, ThreatFeatures,
+    ThreatScore,
 };
 
 pub mod incident_response;
 pub use incident_response::{
-    IncidentResponseManager, Incident, IncidentStatus, Playbook,
-    PlaybookAction, ResponseAction, ActionResult, IncidentStatistics,
+    ActionResult, Incident, IncidentResponseManager, IncidentStatistics, IncidentStatus, Playbook,
+    PlaybookAction, ResponseAction,
 };
 
 pub mod threat_hunting;
 pub use threat_hunting::{
-    ThreatHuntingEngine, ThreatHunt, HuntStatus, HuntQuery,
-    HuntFinding, HuntTemplate, HuntIOC, IOCType as HuntIOCType,
-    HuntStatistics, QueryMatch, IOCSweepResult,
+    HuntFinding, HuntIOC, HuntQuery, HuntStatistics, HuntStatus, HuntTemplate, IOCSweepResult,
+    IOCType as HuntIOCType, QueryMatch, ThreatHunt, ThreatHuntingEngine,
 };
 
 use chrono::{DateTime, Duration, Utc};

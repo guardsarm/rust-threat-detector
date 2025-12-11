@@ -23,10 +23,10 @@ pub struct ThreatFeatures {
     pub unique_sources: f64,
 
     /// Behavioral features
-    pub velocity_score: f64,      // Rate of events
-    pub entropy_score: f64,       // Randomness of activity
-    pub deviation_score: f64,     // Deviation from baseline
-    pub anomaly_indicators: f64,  // Number of anomaly flags
+    pub velocity_score: f64, // Rate of events
+    pub entropy_score: f64,      // Randomness of activity
+    pub deviation_score: f64,    // Deviation from baseline
+    pub anomaly_indicators: f64, // Number of anomaly flags
 
     /// Contextual features
     pub geo_risk_score: f64,
@@ -119,22 +119,22 @@ impl ModelWeights {
     pub fn default_security_model() -> Self {
         Self {
             feature_weights: vec![
-                0.05,   // hour_of_day - unusual hours increase risk
-                0.02,   // day_of_week
-                0.10,   // is_weekend - weekend activity suspicious
-                -0.05,  // is_business_hours - business hours reduce risk
-                0.15,   // event_count_1h - high volume suspicious
-                0.10,   // event_count_24h
-                0.25,   // failed_ratio - high failure rate very suspicious
-                0.12,   // unique_sources - many sources suspicious
-                0.18,   // velocity_score - rapid activity suspicious
-                0.20,   // entropy_score - randomness suspicious
-                0.22,   // deviation_score - deviation from baseline
-                0.25,   // anomaly_indicators
-                0.15,   // geo_risk_score
-                0.10,   // asset_criticality
-                0.18,   // user_risk_score
-                0.12,   // network_risk_score
+                0.05,  // hour_of_day - unusual hours increase risk
+                0.02,  // day_of_week
+                0.10,  // is_weekend - weekend activity suspicious
+                -0.05, // is_business_hours - business hours reduce risk
+                0.15,  // event_count_1h - high volume suspicious
+                0.10,  // event_count_24h
+                0.25,  // failed_ratio - high failure rate very suspicious
+                0.12,  // unique_sources - many sources suspicious
+                0.18,  // velocity_score - rapid activity suspicious
+                0.20,  // entropy_score - randomness suspicious
+                0.22,  // deviation_score - deviation from baseline
+                0.25,  // anomaly_indicators
+                0.15,  // geo_risk_score
+                0.10,  // asset_criticality
+                0.18,  // user_risk_score
+                0.12,  // network_risk_score
             ],
             bias: 0.1,
             threshold: 0.5,
@@ -149,6 +149,7 @@ impl Default for ModelWeights {
 }
 
 /// ML-based threat scorer
+#[allow(dead_code)]
 pub struct MLThreatScorer {
     weights: ModelWeights,
     feature_history: HashMap<String, VecDeque<ThreatFeatures>>,
@@ -200,7 +201,10 @@ impl BaselineStats {
             return 0.0;
         }
         let std = (self.std_event_rate / self.sample_count.max(1) as f64).sqrt();
-        ((event_rate - self.mean_event_rate) / std.max(1.0)).abs().min(3.0) / 3.0
+        ((event_rate - self.mean_event_rate) / std.max(1.0))
+            .abs()
+            .min(3.0)
+            / 3.0
     }
 }
 
@@ -273,6 +277,7 @@ impl MLThreatScorer {
     }
 
     /// Extract features from event data
+    #[allow(clippy::too_many_arguments)]
     pub fn extract_features(
         &mut self,
         entity_id: &str,
@@ -285,10 +290,22 @@ impl MLThreatScorer {
         source_ip: Option<&str>,
         asset_criticality: f64,
     ) -> ThreatFeatures {
-        let hour = timestamp.format("%H").to_string().parse::<f64>().unwrap_or(0.0);
-        let day = timestamp.format("%u").to_string().parse::<f64>().unwrap_or(1.0);
+        let hour = timestamp
+            .format("%H")
+            .to_string()
+            .parse::<f64>()
+            .unwrap_or(0.0);
+        let day = timestamp
+            .format("%u")
+            .to_string()
+            .parse::<f64>()
+            .unwrap_or(1.0);
         let is_weekend = if day >= 6.0 { 1.0 } else { 0.0 };
-        let is_business_hours = if hour >= 9.0 && hour <= 17.0 && day < 6.0 { 1.0 } else { 0.0 };
+        let is_business_hours = if (9.0..=17.0).contains(&hour) && day < 6.0 {
+            1.0
+        } else {
+            0.0
+        };
 
         let failed_ratio = if total_count > 0 {
             failed_count as f64 / total_count as f64
@@ -300,9 +317,10 @@ impl MLThreatScorer {
         let velocity = event_count_1h as f64 / 60.0;
 
         // Get or create baseline
-        let baseline = self.baseline_stats
+        let baseline = self
+            .baseline_stats
             .entry(entity_id.to_string())
-            .or_insert_with(BaselineStats::new);
+            .or_default();
 
         let deviation = baseline.calculate_deviation(event_count_1h as f64);
 
@@ -331,10 +349,18 @@ impl MLThreatScorer {
 
         // Count anomaly indicators
         let mut anomaly_count = 0.0;
-        if is_weekend > 0.0 && event_count_1h > 100 { anomaly_count += 1.0; }
-        if failed_ratio > 0.5 { anomaly_count += 2.0; }
-        if deviation > 0.5 { anomaly_count += 1.0; }
-        if velocity > 10.0 { anomaly_count += 1.0; }
+        if is_weekend > 0.0 && event_count_1h > 100 {
+            anomaly_count += 1.0;
+        }
+        if failed_ratio > 0.5 {
+            anomaly_count += 2.0;
+        }
+        if deviation > 0.5 {
+            anomaly_count += 1.0;
+        }
+        if velocity > 10.0 {
+            anomaly_count += 1.0;
+        }
 
         ThreatFeatures {
             hour_of_day: hour,
@@ -366,13 +392,29 @@ impl MLThreatScorer {
         let mut contributing_factors = Vec::new();
 
         let factor_names = [
-            "Hour of Day", "Day of Week", "Weekend Activity", "Business Hours",
-            "Event Volume (1h)", "Event Volume (24h)", "Failure Rate", "Unique Sources",
-            "Velocity", "Entropy", "Baseline Deviation", "Anomaly Indicators",
-            "Geographic Risk", "Asset Criticality", "User Risk", "Network Risk",
+            "Hour of Day",
+            "Day of Week",
+            "Weekend Activity",
+            "Business Hours",
+            "Event Volume (1h)",
+            "Event Volume (24h)",
+            "Failure Rate",
+            "Unique Sources",
+            "Velocity",
+            "Entropy",
+            "Baseline Deviation",
+            "Anomaly Indicators",
+            "Geographic Risk",
+            "Asset Criticality",
+            "User Risk",
+            "Network Risk",
         ];
 
-        for (i, (&value, &weight)) in feature_vec.iter().zip(self.weights.feature_weights.iter()).enumerate() {
+        for (i, (&value, &weight)) in feature_vec
+            .iter()
+            .zip(self.weights.feature_weights.iter())
+            .enumerate()
+        {
             let contribution = value * weight;
             raw_score += contribution;
 
@@ -381,7 +423,8 @@ impl MLThreatScorer {
                     name: factor_names.get(i).unwrap_or(&"Unknown").to_string(),
                     value,
                     contribution,
-                    description: self.describe_contribution(factor_names.get(i).unwrap_or(&""), value),
+                    description: self
+                        .describe_contribution(factor_names.get(i).unwrap_or(&""), value),
                 });
             }
         }
@@ -391,7 +434,10 @@ impl MLThreatScorer {
 
         // Sort contributing factors by absolute contribution
         contributing_factors.sort_by(|a, b| {
-            b.contribution.abs().partial_cmp(&a.contribution.abs()).unwrap()
+            b.contribution
+                .abs()
+                .partial_cmp(&a.contribution.abs())
+                .unwrap()
         });
         contributing_factors.truncate(5);
 
@@ -410,12 +456,18 @@ impl MLThreatScorer {
     /// Describe what a contribution means
     fn describe_contribution(&self, name: &str, value: f64) -> String {
         match name {
-            "Failure Rate" if value > 0.5 => "High failure rate indicates potential brute force".to_string(),
+            "Failure Rate" if value > 0.5 => {
+                "High failure rate indicates potential brute force".to_string()
+            }
             "Failure Rate" => "Normal failure rate".to_string(),
             "Weekend Activity" if value > 0.0 => "Activity during weekend (unusual)".to_string(),
             "Velocity" if value > 0.5 => "Rapid event generation (suspicious)".to_string(),
-            "Baseline Deviation" if value > 0.5 => "Significant deviation from normal behavior".to_string(),
-            "Geographic Risk" if value > 0.5 => "External or suspicious source location".to_string(),
+            "Baseline Deviation" if value > 0.5 => {
+                "Significant deviation from normal behavior".to_string()
+            }
+            "Geographic Risk" if value > 0.5 => {
+                "External or suspicious source location".to_string()
+            }
             "Anomaly Indicators" if value > 0.0 => "Multiple anomaly flags detected".to_string(),
             _ => format!("{} score: {:.2}", name, value),
         }
@@ -426,10 +478,10 @@ impl MLThreatScorer {
         // Higher confidence with more data
         let event_factor = (features.event_count_24h / 100.0).min(1.0);
 
-        // Higher confidence when features are clear
-        let clarity_factor = if features.failed_ratio > 0.5 || features.deviation_score > 0.5 {
-            0.9
-        } else if features.failed_ratio < 0.1 && features.deviation_score < 0.2 {
+        // Higher confidence when features are clearly risky or clearly safe
+        let is_clearly_risky = features.failed_ratio > 0.5 || features.deviation_score > 0.5;
+        let is_clearly_safe = features.failed_ratio < 0.1 && features.deviation_score < 0.2;
+        let clarity_factor = if is_clearly_risky || is_clearly_safe {
             0.9
         } else {
             0.6
@@ -444,7 +496,12 @@ impl MLThreatScorer {
     }
 
     /// Get top threats from batch
-    pub fn get_top_threats<'a>(&self, scores: &'a [ThreatScore], min_level: RiskLevel, limit: usize) -> Vec<&'a ThreatScore> {
+    pub fn get_top_threats<'a>(
+        &self,
+        scores: &'a [ThreatScore],
+        min_level: RiskLevel,
+        limit: usize,
+    ) -> Vec<&'a ThreatScore> {
         let mut filtered: Vec<&'a ThreatScore> = scores
             .iter()
             .filter(|s| s.risk_level as u8 >= min_level as u8)
@@ -457,7 +514,8 @@ impl MLThreatScorer {
 
     /// Clear old baseline data
     pub fn clear_old_baselines(&mut self, min_samples: usize) {
-        self.baseline_stats.retain(|_, stats| stats.sample_count >= min_samples);
+        self.baseline_stats
+            .retain(|_, stats| stats.sample_count >= min_samples);
     }
 }
 
@@ -478,11 +536,11 @@ mod tests {
         let features = scorer.extract_features(
             "user1",
             Utc::now(),
-            100,  // event_count_1h
-            500,  // event_count_24h
-            20,   // failed_count
-            100,  // total_count
-            5,    // unique_sources
+            100, // event_count_1h
+            500, // event_count_24h
+            20,  // failed_count
+            100, // total_count
+            5,   // unique_sources
             Some("192.168.1.100"),
             50.0, // asset_criticality
         );
@@ -559,7 +617,10 @@ mod tests {
         assert!(!score.contributing_factors.is_empty());
 
         // Should include failure rate as top contributor
-        assert!(score.contributing_factors.iter().any(|f| f.name.contains("Failure")));
+        assert!(score
+            .contributing_factors
+            .iter()
+            .any(|f| f.name.contains("Failure")));
     }
 
     #[test]

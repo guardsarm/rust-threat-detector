@@ -4,12 +4,11 @@
 //! playbook execution, incident lifecycle, and statistics.
 
 use chrono::Utc;
-use std::collections::HashMap;
 use rust_threat_detector::{
-    IncidentResponseManager, IncidentStatus, ThreatAlert,
-    ThreatCategory, ThreatSeverity, ResponseAction, Playbook,
-    PlaybookAction, incident_response::FailureAction,
+    incident_response::FailureAction, IncidentResponseManager, IncidentStatus, Playbook,
+    PlaybookAction, ResponseAction, ThreatAlert, ThreatCategory, ThreatSeverity,
 };
+use std::collections::HashMap;
 
 fn main() {
     println!("=== Automated Incident Response Demo v2.0 ===\n");
@@ -44,9 +43,7 @@ fn main() {
 
     // Example 2: Find and execute playbooks
     println!("\n--- Example 2: Execute Response Playbook ---");
-    let playbook = {
-        manager.find_playbooks(&alert).first().map(|&p| p.clone())
-    };
+    let playbook = { manager.find_playbooks(&alert).first().map(|&p| p.clone()) };
 
     if let Some(playbook) = playbook {
         println!("Found applicable playbook: {}", playbook.name);
@@ -59,7 +56,8 @@ fn main() {
         let results = manager.execute_playbook(&incident_id, &playbook, &context);
         println!("  Executed {} actions:", results.len());
         for result in &results {
-            println!("    - {}: {} ({}ms)",
+            println!(
+                "    - {}: {} ({}ms)",
                 result.action.name(),
                 if result.success { "Success" } else { "Failed" },
                 result.execution_time_ms
@@ -75,7 +73,10 @@ fn main() {
         println!("Status updated to: {:?}", incident.status);
 
         // Add investigation note
-        incident.add_note("analyst1", "Initial triage complete. IP belongs to known malicious range.");
+        incident.add_note(
+            "analyst1",
+            "Initial triage complete. IP belongs to known malicious range.",
+        );
         println!("Added investigation note");
 
         // Update to investigating
@@ -89,7 +90,8 @@ fn main() {
         // Show timeline
         println!("\nIncident Timeline:");
         for entry in &incident.timeline {
-            println!("  [{}] {} by {}: {}",
+            println!(
+                "  [{}] {} by {}: {}",
                 entry.timestamp.format("%H:%M:%S"),
                 entry.event_type,
                 entry.actor,
@@ -99,10 +101,19 @@ fn main() {
 
         // Show metrics
         println!("\nIncident Metrics:");
-        println!("  Time to Acknowledge: {:?} seconds", incident.metrics.time_to_acknowledge_seconds);
-        println!("  Time to Contain: {:?} seconds", incident.metrics.time_to_contain_seconds);
+        println!(
+            "  Time to Acknowledge: {:?} seconds",
+            incident.metrics.time_to_acknowledge_seconds
+        );
+        println!(
+            "  Time to Contain: {:?} seconds",
+            incident.metrics.time_to_contain_seconds
+        );
         println!("  Total Actions: {}", incident.metrics.total_actions);
-        println!("  Successful Actions: {}", incident.metrics.successful_actions);
+        println!(
+            "  Successful Actions: {}",
+            incident.metrics.successful_actions
+        );
     }
 
     // Example 4: Create multiple incidents for statistics
@@ -113,8 +124,16 @@ fn main() {
         let test_alert = ThreatAlert {
             alert_id: format!("ALERT-{:03}", i),
             timestamp: Utc::now(),
-            severity: if i % 2 == 0 { ThreatSeverity::High } else { ThreatSeverity::Medium },
-            category: if i % 3 == 0 { ThreatCategory::MalwareDetection } else { ThreatCategory::BruteForce },
+            severity: if i % 2 == 0 {
+                ThreatSeverity::High
+            } else {
+                ThreatSeverity::Medium
+            },
+            category: if i % 3 == 0 {
+                ThreatCategory::MalwareDetection
+            } else {
+                ThreatCategory::BruteForce
+            },
             description: format!("Test alert {}", i),
             source_log: "test.log".to_string(),
             indicators: vec![],
@@ -164,16 +183,32 @@ fn main() {
     // Example 7: Custom response action
     println!("\n--- Example 7: Response Action Types ---");
     let actions = vec![
-        ResponseAction::BlockIP { ip: "1.2.3.4".to_string(), duration_hours: 24 },
-        ResponseAction::DisableAccount { account: "compromised_user".to_string() },
-        ResponseAction::IsolateHost { hostname: "infected-host".to_string() },
-        ResponseAction::NotifyTeam { team: "SOC".to_string(), message: "Critical incident".to_string() },
-        ResponseAction::EscalateToSOC { priority: "P1".to_string() },
+        ResponseAction::BlockIP {
+            ip: "1.2.3.4".to_string(),
+            duration_hours: 24,
+        },
+        ResponseAction::DisableAccount {
+            account: "compromised_user".to_string(),
+        },
+        ResponseAction::IsolateHost {
+            hostname: "infected-host".to_string(),
+        },
+        ResponseAction::NotifyTeam {
+            team: "SOC".to_string(),
+            message: "Critical incident".to_string(),
+        },
+        ResponseAction::EscalateToSOC {
+            priority: "P1".to_string(),
+        },
     ];
 
     println!("Available response actions:");
     for action in &actions {
-        println!("  - {} (reversible: {})", action.name(), action.is_reversible());
+        println!(
+            "  - {} (reversible: {})",
+            action.name(),
+            action.is_reversible()
+        );
     }
 
     println!("\n=== Demo Complete ===");

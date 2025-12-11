@@ -252,8 +252,13 @@ impl ThreatHuntingEngine {
             id: "TMPL-001".to_string(),
             name: "Lateral Movement Detection".to_string(),
             description: "Hunt for signs of lateral movement within the network".to_string(),
-            hypothesis_template: "An attacker may be moving laterally using {{technique}}".to_string(),
-            mitre_techniques: vec!["T1021".to_string(), "T1076".to_string(), "T1077".to_string()],
+            hypothesis_template: "An attacker may be moving laterally using {{technique}}"
+                .to_string(),
+            mitre_techniques: vec![
+                "T1021".to_string(),
+                "T1076".to_string(),
+                "T1077".to_string(),
+            ],
             suggested_queries: vec![
                 HuntQuery {
                     id: "Q-001".to_string(),
@@ -274,7 +279,11 @@ impl ThreatHuntingEngine {
                     expected_results: "PsExec execution events".to_string(),
                 },
             ],
-            data_sources: vec!["network_logs".to_string(), "auth_logs".to_string(), "process_logs".to_string()],
+            data_sources: vec![
+                "network_logs".to_string(),
+                "auth_logs".to_string(),
+                "process_logs".to_string(),
+            ],
         });
 
         // Credential Theft Hunt Template
@@ -304,7 +313,11 @@ impl ThreatHuntingEngine {
                     expected_results: "Authentication anomalies".to_string(),
                 },
             ],
-            data_sources: vec!["process_logs".to_string(), "auth_logs".to_string(), "windows_security".to_string()],
+            data_sources: vec![
+                "process_logs".to_string(),
+                "auth_logs".to_string(),
+                "windows_security".to_string(),
+            ],
         });
 
         // Data Exfiltration Hunt Template
@@ -334,7 +347,11 @@ impl ThreatHuntingEngine {
                     expected_results: "Suspicious DNS activity".to_string(),
                 },
             ],
-            data_sources: vec!["network_logs".to_string(), "dns_logs".to_string(), "proxy_logs".to_string()],
+            data_sources: vec![
+                "network_logs".to_string(),
+                "dns_logs".to_string(),
+                "proxy_logs".to_string(),
+            ],
         });
 
         // Persistence Hunt Template
@@ -342,8 +359,13 @@ impl ThreatHuntingEngine {
             id: "TMPL-004".to_string(),
             name: "Persistence Mechanism Detection".to_string(),
             description: "Hunt for attacker persistence mechanisms".to_string(),
-            hypothesis_template: "Attacker may have established persistence using {{mechanism}}".to_string(),
-            mitre_techniques: vec!["T1053".to_string(), "T1547".to_string(), "T1546".to_string()],
+            hypothesis_template: "Attacker may have established persistence using {{mechanism}}"
+                .to_string(),
+            mitre_techniques: vec![
+                "T1053".to_string(),
+                "T1547".to_string(),
+                "T1546".to_string(),
+            ],
             suggested_queries: vec![
                 HuntQuery {
                     id: "Q-007".to_string(),
@@ -364,13 +386,26 @@ impl ThreatHuntingEngine {
                     expected_results: "Registry modifications".to_string(),
                 },
             ],
-            data_sources: vec!["process_logs".to_string(), "registry_logs".to_string(), "file_logs".to_string()],
+            data_sources: vec![
+                "process_logs".to_string(),
+                "registry_logs".to_string(),
+                "file_logs".to_string(),
+            ],
         });
     }
 
     /// Create hunt from template
-    pub fn create_hunt_from_template(&mut self, template_id: &str, owner: &str, customization: HashMap<String, String>) -> Option<String> {
-        let template = self.hunt_templates.iter().find(|t| t.id == template_id)?.clone();
+    pub fn create_hunt_from_template(
+        &mut self,
+        template_id: &str,
+        owner: &str,
+        customization: HashMap<String, String>,
+    ) -> Option<String> {
+        let template = self
+            .hunt_templates
+            .iter()
+            .find(|t| t.id == template_id)?
+            .clone();
 
         let mut hypothesis = template.hypothesis_template.clone();
         for (key, value) in &customization {
@@ -473,10 +508,7 @@ impl ThreatHuntingEngine {
                     match_count: matches.len(),
                     first_seen: matches.iter().map(|l| l.timestamp).min(),
                     last_seen: matches.iter().map(|l| l.timestamp).max(),
-                    affected_assets: matches
-                        .iter()
-                        .filter_map(|l| l.source_ip.clone())
-                        .collect(),
+                    affected_assets: matches.iter().filter_map(|l| l.source_ip.clone()).collect(),
                 });
             }
         }
@@ -510,11 +542,20 @@ impl ThreatHuntingEngine {
     /// Get hunt statistics
     pub fn get_statistics(&self) -> HuntStatistics {
         let total = self.hunts.len();
-        let active = self.hunts.values().filter(|h| h.status == HuntStatus::Active).count();
-        let completed = self.hunts.values().filter(|h| h.status == HuntStatus::Completed).count();
+        let active = self
+            .hunts
+            .values()
+            .filter(|h| h.status == HuntStatus::Active)
+            .count();
+        let completed = self
+            .hunts
+            .values()
+            .filter(|h| h.status == HuntStatus::Completed)
+            .count();
 
         let total_findings: usize = self.hunts.values().map(|h| h.findings.len()).sum();
-        let true_positives = self.hunts
+        let true_positives = self
+            .hunts
             .values()
             .flat_map(|h| &h.findings)
             .filter(|f| f.result_type == HuntResultType::TruePositive)
@@ -577,11 +618,7 @@ mod tests {
 
     #[test]
     fn test_hunt_creation() {
-        let hunt = ThreatHunt::new(
-            "Test Hunt",
-            "An attacker may be present",
-            "analyst",
-        );
+        let hunt = ThreatHunt::new("Test Hunt", "An attacker may be present", "analyst");
 
         assert_eq!(hunt.status, HuntStatus::Draft);
         assert_eq!(hunt.owner, "analyst");
@@ -671,16 +708,14 @@ mod tests {
             tags: vec!["malware".to_string()],
         });
 
-        let logs = vec![
-            LogEntry {
-                timestamp: Utc::now(),
-                source_ip: Some("192.168.1.1".to_string()),
-                user: None,
-                event_type: "dns".to_string(),
-                message: "DNS query for evil.com".to_string(),
-                metadata: HashMap::new(),
-            },
-        ];
+        let logs = vec![LogEntry {
+            timestamp: Utc::now(),
+            source_ip: Some("192.168.1.1".to_string()),
+            user: None,
+            event_type: "dns".to_string(),
+            message: "DNS query for evil.com".to_string(),
+            metadata: HashMap::new(),
+        }];
 
         let results = engine.ioc_sweep(&logs);
         assert_eq!(results.len(), 1);
